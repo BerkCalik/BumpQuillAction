@@ -1,0 +1,32 @@
+name: BumpQuill
+description: Scoped Collector input dispatch and Publisher workflow execution with verified backend bindings.
+inputs:
+  mode:
+    description: Collector or Publisher; each requires its separately approved workflow policy.
+    default: Collector
+  backend-url:
+    description: Trusted BumpQuill HTTPS API origin.
+    required: true
+  project-key:
+    description: Repository API key used only for backend exchange.
+    required: true
+  github-token:
+    description: Local scoped GitHub credential; read-only for Collector, narrowly write-enabled for Publisher, never sent to BumpQuill.
+    required: true
+  oidc-audience:
+    description: Audience configured by the backend OIDC policy.
+    required: true
+  checkout-dir:
+    description: Checkout root inside GITHUB_WORKSPACE; defaults to workspace.
+outputs:
+  collector-status:
+    description: Actual Collector result; does not imply publication.
+  jobs-dispatched:
+    description: Number of inputs successfully finalized for processing.
+  publisher-status:
+    description: Actual Publisher result after reading the backend queues.
+  publications-reported:
+    description: Number of publication reports accepted by the backend.
+runs:
+  using: node24
+  main: dist/index.js
