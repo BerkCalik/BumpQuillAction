@@ -1,0 +1,24 @@
+name: BumpQuill Collector
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: bumpquill-collector-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    permissions:
+      contents: read
+      pull-requests: read
+      id-token: write
+    uses: BerkCalik/BumpQuillAction/.github/workflows/collector.yml@761c6f8fe243328a9fc672b12bf86edacb0f0321
+    with:
+      backend-url: ${{ vars.BUMPQUILL_BACKEND_URL }}
+      oidc-audience: ${{ vars.BUMPQUILL_OIDC_AUDIENCE }}
+    secrets:
+      project-key: ${{ secrets.BUMPQUILL_PROJECT_KEY }}

@@ -1,0 +1,27 @@
+# Replace the placeholder only with the reviewed, immutable central workflow commit.
+# The parent updates the central runtime pin after review; the current pin predates Publisher.
+name: BumpQuill Publisher
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '*/15 * * * *'
+
+permissions: {}
+
+concurrency:
+  group: bumpquill-publisher-${{ github.repository_id }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    permissions:
+      contents: write
+      pull-requests: write
+      id-token: write
+    uses: BerkCalik/BumpQuillAction/.github/workflows/publisher.yml@761c6f8fe243328a9fc672b12bf86edacb0f0321
+    with:
+      backend-url: ${{ vars.BUMPQUILL_BACKEND_URL }}
+      oidc-audience: ${{ vars.BUMPQUILL_OIDC_AUDIENCE }}
+    secrets:
+      project-key: ${{ secrets.BUMPQUILL_PROJECT_KEY }}
