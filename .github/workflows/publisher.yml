@@ -1,0 +1,48 @@
+name: BumpQuill reusable Publisher
+
+on:
+  workflow_call:
+    inputs:
+      backend-url:
+        required: true
+        type: string
+      oidc-audience:
+        required: true
+        type: string
+    secrets:
+      project-key:
+        required: true
+    outputs:
+      publisher-status:
+        value: ${{ jobs.publish.outputs.publisher-status }}
+      publications-reported:
+        value: ${{ jobs.publish.outputs.publications-reported }}
+
+permissions: {}
+
+concurrency:
+  group: bumpquill-central-publisher-${{ github.repository_id }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: ${{ github.ref_type == 'branch' && (github.event_name == 'workflow_dispatch' || github.event_name == 'schedule') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+      pull-requests: write
+      id-token: write
+    outputs:
+      publisher-status: ${{ steps.publish.outputs.publisher-status }}
+      publications-reported: ${{ steps.publish.outputs.publications-reported }}
+    steps:
+      - name: BumpQuill Publisher
+        id: publish
+        uses: BerkCalik/BumpQuillAction@47b293577fd8320445a06c04d4107785ed16a5db
+        with:
+          mode: Publisher
+          backend-url: ${{ inputs.backend-url }}
+          project-key: ${{ secrets.project-key }}
+          github-token: ${{ github.token }}
+          oidc-audience: ${{ inputs.oidc-audience }}

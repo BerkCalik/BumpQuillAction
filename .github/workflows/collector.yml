@@ -1,0 +1,52 @@
+name: BumpQuill reusable Collector
+
+on:
+  workflow_call:
+    inputs:
+      backend-url:
+        required: true
+        type: string
+      oidc-audience:
+        required: true
+        type: string
+    secrets:
+      project-key:
+        required: true
+    outputs:
+      collector-status:
+        value: ${{ jobs.collect.outputs.collector-status }}
+      jobs-dispatched:
+        value: ${{ jobs.collect.outputs.jobs-dispatched }}
+
+permissions: {}
+
+jobs:
+  collect:
+    if: ${{ github.ref_type == 'branch' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      pull-requests: read
+      id-token: write
+    outputs:
+      collector-status: ${{ steps.collect.outputs.collector-status }}
+      jobs-dispatched: ${{ steps.collect.outputs.jobs-dispatched }}
+    steps:
+      - name: Checkout caller HEAD
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: ${{ github.repository }}
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: BumpQuill Collector
+        id: collect
+        uses: BerkCalik/BumpQuillAction@47b293577fd8320445a06c04d4107785ed16a5db
+        with:
+          mode: Collector
+          backend-url: ${{ inputs.backend-url }}
+          project-key: ${{ secrets.project-key }}
+          github-token: ${{ github.token }}
+          oidc-audience: ${{ inputs.oidc-audience }}
